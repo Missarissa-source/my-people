@@ -379,7 +379,7 @@
     'Other':            { bg: '#f5f5f4', text: '#57534e' },
   };
 
-  let db = null;
+  let db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   let contacts = [];
   let editingId = null;
   let activeFilter = 'All';
@@ -408,7 +408,6 @@
       document.getElementById('header-count').textContent = 'Not connected';
       return;
     }
-    db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     await loadContacts();
   }
 
