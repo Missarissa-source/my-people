@@ -273,6 +273,14 @@
 
   document.getElementById('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') signIn(); });
 
+  // Auto-fill family name from last name
+  document.getElementById('f-last').addEventListener('input', e => {
+    const familyNameField = document.getElementById('f-family-name');
+    if (!familyNameField.value) {
+      familyNameField.value = e.target.value;
+    }
+  });
+
   // ─── DATA ─────────────────────────────────────────────────────
 
   async function loadContacts() {
