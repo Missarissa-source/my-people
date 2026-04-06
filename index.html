@@ -135,7 +135,7 @@
   <main class="main">
     <div class="search-wrap">
       <span class="search-icon">&#9906;</span>
-      <input class="search-input" id="search" type="text" placeholder="Search names, notes, family connections..." oninput="render()">
+      <input class="search-input" id="search" type="text" placeholder="Search names, notes, families..." oninput="render()">
     </div>
     <div class="filter-row" id="filter-row"></div>
     <div class="stats-bar" id="stats-bar"></div>
@@ -167,9 +167,24 @@
         <option>Other</option>
       </select>
     </div>
-    <div class="form-group">
-      <label>Family connection</label>
-      <input id="f-family" type="text" placeholder='e.g. "Mom of Lily, 2nd grade"'>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Family name</label>
+        <input id="f-family-name" type="text" placeholder="e.g. Henderson">
+      </div>
+      <div class="form-group">
+        <label>Role</label>
+        <select id="f-role">
+          <option value="">Select role...</option>
+          <option>Mom</option>
+          <option>Dad</option>
+          <option>Kid</option>
+          <option>Grandparent</option>
+          <option>Guardian</option>
+          <option>Partner</option>
+          <option>Other</option>
+        </select>
+      </div>
     </div>
     <div class="form-group">
       <label>Notes</label>
@@ -298,11 +313,21 @@
 
     let filtered = contacts.filter(c => {
       const matchCat = activeFilter === 'All' || c.category === activeFilter;
-      const haystack = [c.first_name, c.last_name, c.category, c.family_connection, c.notes].join(' ').toLowerCase();
+      const haystack = [c.first_name, c.last_name, c.category, c.family_name, c.role, c.notes].join(' ').toLowerCase();
       return matchCat && (!q || haystack.includes(q));
     });
 
-    filtered.sort((a, b) => (a.last_name||'').localeCompare(b.last_name||'') || (a.first_name||'').localeCompare(b.first_name||''));
+    filtered.sort((a, b) => {
+      const aFamily = a.family_name || '';
+      const bFamily = b.family_name || '';
+      // Contacts without family names go to the end
+      if (!aFamily && bFamily) return 1;
+      if (aFamily && !bFamily) return -1;
+      // Otherwise sort by family name, then last name, then first name
+      return aFamily.localeCompare(bFamily) ||
+             (a.last_name||'').localeCompare(b.last_name||'') ||
+             (a.first_name||'').localeCompare(b.first_name||'');
+    });
 
     const total = contacts.length;
     document.getElementById('header-count').textContent = total === 1 ? '1 person' : `${total} people`;
@@ -324,7 +349,7 @@
           <div class="avatar" style="background:${col.bg};color:${col.text}">${initials(c.first_name, c.last_name)}</div>
           <div class="card-body">
             <div class="card-name">${c.first_name||''} ${c.last_name||''}</div>
-            ${c.family_connection ? `<div class="card-family">${c.family_connection}</div>` : ''}
+            ${c.family_name || c.role ? `<div class="card-family">${[c.family_name, c.role].filter(Boolean).join(' • ')}</div>` : ''}
           </div>
           ${badge ? `<span class="badge" style="background:${badge.bg};color:${badge.text}">${c.category}</span>` : ''}
         </div>
@@ -340,8 +365,9 @@
   function openAdd() {
     editingId = null;
     document.getElementById('modal-title').textContent = 'Add person';
-    ['f-first','f-last','f-family','f-notes'].forEach(id => document.getElementById(id).value = '');
+    ['f-first','f-last','f-family-name','f-notes'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('f-cat').value = '';
+    document.getElementById('f-role').value = '';
     document.getElementById('btn-delete').style.display = 'none';
     document.getElementById('modal-overlay').classList.add('open');
     document.getElementById('f-first').focus();
@@ -355,7 +381,8 @@
     document.getElementById('f-first').value = c.first_name || '';
     document.getElementById('f-last').value = c.last_name || '';
     document.getElementById('f-cat').value = c.category || '';
-    document.getElementById('f-family').value = c.family_connection || '';
+    document.getElementById('f-family-name').value = c.family_name || '';
+    document.getElementById('f-role').value = c.role || '';
     document.getElementById('f-notes').value = c.notes || '';
     document.getElementById('btn-delete').style.display = 'block';
     document.getElementById('modal-overlay').classList.add('open');
@@ -371,7 +398,8 @@
     const data = {
       first_name: first, last_name: last,
       category: document.getElementById('f-cat').value || null,
-      family_connection: document.getElementById('f-family').value.trim() || null,
+      family_name: document.getElementById('f-family-name').value.trim() || null,
+      role: document.getElementById('f-role').value || null,
       notes: document.getElementById('f-notes').value.trim() || null,
     };
     let error;
