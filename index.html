@@ -350,7 +350,8 @@
     }
 
     list.innerHTML = filtered.map(c => {
-      const col = avatarColor((c.first_name||'') + (c.last_name||''));
+      const colorKey = c.family_name || c.last_name || c.first_name || '';
+      const col = avatarColor(colorKey);
       const badge = c.category ? (BADGE_MAP[c.category] || BADGE_MAP['Other']) : null;
       return `<div class="contact-card" onclick="openEdit('${c.id}')">
         <div class="card-top">
