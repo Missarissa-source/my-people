@@ -284,6 +284,8 @@
     }
   });
 
+  let isAutoFillingCategory = false;
+
   document.getElementById('f-family-name').addEventListener('input', e => {
     const lastNameValue = document.getElementById('f-last').value;
     // Mark as manually edited if user changes it to something different from last name
@@ -299,15 +301,19 @@
         const categories = [...new Set(familyMembers.map(c => c.category).filter(Boolean))];
         // Only auto-fill if all family members share the same category
         if (categories.length === 1) {
+          isAutoFillingCategory = true;
           document.getElementById('f-cat').value = categories[0];
+          isAutoFillingCategory = false;
         }
       }
     }
   });
 
   document.getElementById('f-cat').addEventListener('change', e => {
-    // Mark as manually selected when user changes the category dropdown
-    categoryManuallySelected = (e.target.value !== '');
+    // Only mark as manually selected if this wasn't triggered by auto-fill
+    if (!isAutoFillingCategory && e.target.value !== '') {
+      categoryManuallySelected = true;
+    }
   });
 
   // ─── DATA ─────────────────────────────────────────────────────
