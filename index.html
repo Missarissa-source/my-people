@@ -276,23 +276,10 @@
   // Auto-fill family name from last name
   let familyNameManuallyEdited = false;
   let categoryManuallySelected = false;
-
-  document.getElementById('f-last').addEventListener('input', e => {
-    const familyNameField = document.getElementById('f-family-name');
-    if (!familyNameManuallyEdited) {
-      familyNameField.value = e.target.value;
-    }
-  });
-
   let isAutoFillingCategory = false;
 
-  document.getElementById('f-family-name').addEventListener('input', e => {
-    const lastNameValue = document.getElementById('f-last').value;
-    // Mark as manually edited if user changes it to something different from last name
-    familyNameManuallyEdited = (e.target.value !== lastNameValue);
-
-    // Auto-fill category based on family name
-    const familyName = e.target.value.trim();
+  // Function to auto-fill category based on family name
+  function autoFillCategory(familyName) {
     if (familyName && !categoryManuallySelected) {
       const familyMembers = contacts.filter(c =>
         c.family_name && c.family_name.toLowerCase() === familyName.toLowerCase()
@@ -307,6 +294,24 @@
         }
       }
     }
+  }
+
+  document.getElementById('f-last').addEventListener('input', e => {
+    const familyNameField = document.getElementById('f-family-name');
+    if (!familyNameManuallyEdited) {
+      familyNameField.value = e.target.value;
+      // Also trigger category auto-fill when family name is auto-filled
+      autoFillCategory(e.target.value.trim());
+    }
+  });
+
+  document.getElementById('f-family-name').addEventListener('input', e => {
+    const lastNameValue = document.getElementById('f-last').value;
+    // Mark as manually edited if user changes it to something different from last name
+    familyNameManuallyEdited = (e.target.value !== lastNameValue);
+
+    // Auto-fill category based on family name
+    autoFillCategory(e.target.value.trim());
   });
 
   document.getElementById('f-cat').addEventListener('change', e => {
