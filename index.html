@@ -274,11 +274,19 @@
   document.getElementById('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') signIn(); });
 
   // Auto-fill family name from last name
+  let familyNameManuallyEdited = false;
+
   document.getElementById('f-last').addEventListener('input', e => {
     const familyNameField = document.getElementById('f-family-name');
-    if (!familyNameField.value) {
+    if (!familyNameManuallyEdited) {
       familyNameField.value = e.target.value;
     }
+  });
+
+  document.getElementById('f-family-name').addEventListener('input', e => {
+    const lastNameValue = document.getElementById('f-last').value;
+    // Mark as manually edited if user changes it to something different from last name
+    familyNameManuallyEdited = (e.target.value !== lastNameValue);
   });
 
   // ─── DATA ─────────────────────────────────────────────────────
@@ -373,6 +381,7 @@
 
   function openAdd() {
     editingId = null;
+    familyNameManuallyEdited = false;
     document.getElementById('modal-title').textContent = 'Add person';
     ['f-first','f-last','f-family-name','f-notes'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('f-cat').value = '';
@@ -386,6 +395,7 @@
     const c = contacts.find(x => x.id === id);
     if (!c) return;
     editingId = id;
+    familyNameManuallyEdited = true; // Prevent auto-fill when editing existing contact
     document.getElementById('modal-title').textContent = 'Edit person';
     document.getElementById('f-first').value = c.first_name || '';
     document.getElementById('f-last').value = c.last_name || '';
